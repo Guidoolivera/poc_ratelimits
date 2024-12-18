@@ -37,7 +37,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
     'rest_framework',
     'api_tests',
     'oauth2_provider',
@@ -59,6 +58,7 @@ REST_FRAMEWORK = {
 }
 
 MIDDLEWARE = [
+    # 'django_prometheus.middleware.PrometheusBeforeMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -69,7 +69,8 @@ MIDDLEWARE = [
     # Middleware custom
     # 'poc_ratelimits.middlewares.ThrottleAssignmentMiddleware',
     # 'poc_ratelimits.middlewares.RateLimitHeadersMiddleware'
-    'poc_ratelimits.middlewares.ThrottleHeadersMiddleware'
+    'poc_ratelimits.middlewares.ThrottleHeadersMiddleware',
+    # 'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
 
 ROOT_URLCONF = 'poc_ratelimits.urls'
@@ -143,4 +144,12 @@ STATIC_URL = 'static/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'my_cache_table',  # Nombre de la tabla de caché en tu base de datos
+    }
+}

@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from django_prometheus.exports import ExportToDjangoView
 
 app_name = 'api_tests'
 
@@ -10,5 +11,6 @@ urlpatterns = [
     path('saludar_3/', views.SaludarViewThrottle.as_view(), name='hola'),
     path('check/', views.CheckThrottleData.as_view(), name='check'),
     path('check_oauth/', views.ProtectedViewForOauthApps.as_view(), name='check_oauth'),
+    path('metrics/', ExportToDjangoView, name='prometheus_export'),
 
 ]
