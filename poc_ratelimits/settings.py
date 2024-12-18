@@ -44,12 +44,14 @@ INSTALLED_APPS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.AnonRateThrottle',
-        'rest_framework.throttling.UserRateThrottle',
+        # 'rest_framework.throttling.AnonRateThrottle',
+        # 'rest_framework.throttling.UserRateThrottle',
+        'api_tests.customs.CustomRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '3/minute',  # 5 solicitudes por hora para usuarios anónimos
-        'user': '1/minute',  # 10 solicitudes por hora para usuarios autenticados
+        # 'anon': '3/minute',  # 5 solicitudes por hora para usuarios anónimos
+        # 'user': '1/minute',  # 10 solicitudes por hora para usuarios autenticados
+        'custom': '3/minute',
     },
 }
 
@@ -62,8 +64,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # Middleware custom
-    'poc_ratelimits.middlewares.ThrottleAssignmentMiddleware',
-    'poc_ratelimits.middlewares.RateLimitHeadersMiddleware'
+    # 'poc_ratelimits.middlewares.ThrottleAssignmentMiddleware',
+    # 'poc_ratelimits.middlewares.RateLimitHeadersMiddleware'
+    'poc_ratelimits.middlewares.ThrottleHeadersMiddleware'
 ]
 
 ROOT_URLCONF = 'poc_ratelimits.urls'

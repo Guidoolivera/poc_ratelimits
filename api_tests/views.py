@@ -5,7 +5,8 @@ from django_ratelimit.decorators import ratelimit
 from rest_framework.views import APIView
 from django.utils.decorators import method_decorator
 from rest_framework.throttling import UserRateThrottle
-from .customs import CustomUserRateThrottle
+from .customs import CustomUserRateThrottle, CustomRateThrottle
+from django.core.cache import cache
 
 
 # Create your views here.
@@ -58,19 +59,45 @@ class SaludarView2(APIView):
 
 
 class SaludarViewThrottle(APIView):
-    throttle_classes = [CustomUserRateThrottle]
-
-    def initial(self, request, *args, **kwargs):
-        super().initial(request, *args, **kwargs)
-
-        # Asignamos el throttle al request aquí para que esté disponible para el middleware
-        # Aquí obtenemos el throttle, asumiendo que hay uno
-        throttle = self.get_throttles()[0]
-        request.throttle = throttle
-        print('THR - -', request.throttle)
+    throttle_classes = [CustomRateThrottle]
 
     def get(self, request):
         return Response({
             'status': 'Permitido',
             'message': 'Hola!'
         })
+
+
+class CheckThrottleData(APIView):
+    throttle_classes = [CustomRateThrottle]  # Usando tu throttle personalizado
+
+    def get(self, request):
+        # Crear la instancia de CustomRateThrottle
+        throttle = CustomRateThrottle()
+
+        # Generar la clave del cache
+        cache_key = throttle.get_cache_key(request, self)
+
+        # Obtener los datos del cache
+        cache_data = cache.get(cache_key)
+        remaining_requests = get_remaining_requests(request, self)
+
+        return Response({
+            "cache_key": cache_key,
+            "cache_data": cache_data,
+            "remaining_requests": remaining_requests,
+            "limit": request.throttle_limit
+        })
+
+
+def get_remaining_requests(request, view):
+    throttle = CustomRateThrottle()
+    cache_key = throttle.get_cache_key(request, view)
+    cache_data = cache.get(cache_key)
+
+    if not cache_data:
+        # Si no hay datos en el cache, todas las solicitudes están disponibles
+        return throttle.num_requests
+
+    remaining_requests = throttle.num_requests - len(cache_data)
+    return max(0, remaining_requests)

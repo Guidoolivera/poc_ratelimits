@@ -33,3 +33,20 @@ class RateLimitHeadersMiddleware(MiddlewareMixin):
             print('Middleware: No throttle detected')
 
         return response
+
+
+class ThrottleHeadersMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        print("calling")
+        print(request)
+        if hasattr(request, 'throttle_remaining') and hasattr(request, 'throttle_limit'):
+            print("HAS ATTR")
+            response['X-RateLimit-Limit'] = request.throttle_limit
+            response['X-RateLimit-Remaining'] = max(0,
+                                                    request.throttle_remaining)
+
+        return response
