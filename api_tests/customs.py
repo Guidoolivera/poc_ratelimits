@@ -1,5 +1,5 @@
 from rest_framework.throttling import UserRateThrottle, SimpleRateThrottle
-
+from oauth2_provider.models import AccessToken
 
 class CustomUserRateThrottle(UserRateThrottle):
     def wait(self):
@@ -16,7 +16,7 @@ class CustomUserRateThrottle(UserRateThrottle):
 
 
 class CustomRateThrottle(SimpleRateThrottle):
-    scope = 'custom'
+    scope = 'oauth2_app'
 
     def get_cache_key(self, request, view):
         # Si el usuario está autenticado, usar su ID
@@ -47,3 +47,47 @@ class CustomRateThrottle(SimpleRateThrottle):
             print("REQUEST LIMIT:", request.throttle_limit)
 
         return is_allowed
+
+
+class OAuth2AppThrottle(SimpleRateThrottle):
+    scope = 'oauth2_app'
+    
+    def wait(self):
+        return super().wait()
+
+    def get_cache_key(self, request, view):
+        # Utilizar el ID de la aplicación OAuth2 para generar la clave de caché
+        app_id = request.headers.get('cliente')
+        print("HEADERS:", request.headers)
+
+        print(f"CLIENT ID : {app_id}")
+        if not app_id:
+            return None
+        return f"throttle_{self.scope}_{app_id}"
+
+    def allow_request(self, request, view):
+        # Asegurarte de que self.key esté inicializada
+        self.key = self.get_cache_key(request, view)
+
+        # Inicializar el historial solo si self.key es válido
+        self.history = self.cache.get(self.key, []) if self.key else []
+        
+        # Llama al método base para determinar si la solicitud está permitida
+        is_allowed = super().allow_request(request, view)
+
+        # Configurar los encabezados personalizados para límites de solicitud
+        if self.history and self.num_requests:
+            remaining_request = self.num_requests - len(self.history)
+            request.throttle_remaining = remaining_request
+            request.throttle_limit = self.num_requests
+
+        return is_allowed
+        
+    # def get_rate(self):
+    #     client_id = self.cache_key.split('_')[-1]
+    #     if client_id == 'xxxx-xxxx-1234':
+    #         return '100/h'
+    #     return '10/h'
+
+    def wait():
+        return super().wait()

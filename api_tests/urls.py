@@ -9,5 +9,6 @@ urlpatterns = [
     path('saludar_2/', views.SaludarView2.as_view(), name='chau'),
     path('saludar_3/', views.SaludarViewThrottle.as_view(), name='hola'),
     path('check/', views.CheckThrottleData.as_view(), name='check'),
+    path('check_oauth/', views.ProtectedViewForOauthApps.as_view(), name='check_oauth'),
 
 ]

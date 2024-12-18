@@ -5,7 +5,7 @@ from django_ratelimit.decorators import ratelimit
 from rest_framework.views import APIView
 from django.utils.decorators import method_decorator
 from rest_framework.throttling import UserRateThrottle
-from .customs import CustomUserRateThrottle, CustomRateThrottle
+from .customs import CustomUserRateThrottle, OAuth2AppThrottle, CustomRateThrottle
 from django.core.cache import cache
 
 
@@ -75,10 +75,8 @@ class CheckThrottleData(APIView):
         # Crear la instancia de CustomRateThrottle
         throttle = CustomRateThrottle()
 
-        # Generar la clave del cache
         cache_key = throttle.get_cache_key(request, self)
 
-        # Obtener los datos del cache
         cache_data = cache.get(cache_key)
         remaining_requests = get_remaining_requests(request, self)
 
@@ -88,7 +86,27 @@ class CheckThrottleData(APIView):
             "remaining_requests": remaining_requests,
             "limit": request.throttle_limit
         })
+    
+class ProtectedViewForOauthApps(APIView):
+    throttle_classes = [OAuth2AppThrottle]
 
+    def get(self, request):
+        # Crear la instancia de CustomRateThrottle
+        throttle = OAuth2AppThrottle()
+
+        cache_key = throttle.get_cache_key(request, self)
+
+        cache_data = cache.get(cache_key)
+        remaining_requests = getattr(request, 'throttle_remaining', None)
+        limit = getattr(request, 'throttle_limit', None)
+
+        return Response({
+            "message": "Permitido.",
+            "cache_key": cache_key,
+            "cache_data": cache_data,
+            "remaining_requests": remaining_requests,
+            "limit": limit
+        })
 
 def get_remaining_requests(request, view):
     throttle = CustomRateThrottle()

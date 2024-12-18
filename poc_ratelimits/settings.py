@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'api_tests',
+    'oauth2_provider',
 ]
 
 REST_FRAMEWORK = {
@@ -47,11 +48,13 @@ REST_FRAMEWORK = {
         # 'rest_framework.throttling.AnonRateThrottle',
         # 'rest_framework.throttling.UserRateThrottle',
         'api_tests.customs.CustomRateThrottle',
+        'api_tests.customs.OAuth2AppThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
         # 'anon': '3/minute',  # 5 solicitudes por hora para usuarios anónimos
         # 'user': '1/minute',  # 10 solicitudes por hora para usuarios autenticados
-        'custom': '3/minute',
+        # 'custom': '3/minute',
+        'oauth2_app': '5/minute'
     },
 }
 
